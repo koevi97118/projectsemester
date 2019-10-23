@@ -66,7 +66,7 @@ positivelist as (select *
 from positivegroup
 where rn = 1)
 
-select distinct patientunitstayid, negativelist.uniquepid, unabridgedUnitLOS, unabridgedHospLOS, unitType,age, gender, ethnicity,apacheScore
+select distinct patientunitstayid, positivelist.uniquepid, unabridgedUnitLOS, unabridgedHospLOS, unitType,age, gender, ethnicity,apacheScore
 ,unitDischargeStatus
 from positivelist
 left join `physionet-data.eicu_crd.patient` using (patientUnitStayID) 
