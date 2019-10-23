@@ -1,7 +1,33 @@
 WITH
+patient as (
+select *
+from `physionet-data.eicu_crd.patient`
+),
+
+treatment as (
+select *
+from `physionet-data.eicu_crd.treatment`
+),
+
+diagnosis as (
+select *
+from `physionet-data.eicu_crd.diagnosis`
+),
+
+lab as (
+select *
+from `physionet-data.eicu_crd.lab`
+),
+
+apachepatientresult as (
+select *
+from `physionet-data.eicu_crd.apachepatientresult`
+),
+
+
 Reliable_ICUs as(
 SELECT *
-FROM `physionet-data.eicu_crd.patient`
+FROM patient
 WHERE
 (wardID IN(259,261,267,273,285,286,307,317,324,337,338,345,347,362,369,376,377,384,391,394,
 408,413,417,425,428,429,430,431,434,445,464,451,487,489,491,495,498,504,506,512,513,594,601,
@@ -31,11 +57,11 @@ ORDER BY hospitalID),
 
 sq as (select distinct patientunitstayid, uniquepid
 from Reliable_ICUs
-left join `physionet-data.eicu_crd.diagnosis` using (patientunitstayid)
+left join diagnosis using (patientunitstayid)
 where patientUnitStayID
 not in (
 SELECT DISTINCT patientUnitStayID
-FROM `physionet-data.eicu_crd.diagnosis`
+FROM diagnosis
 WHERE 
 (LOWER(diagnosisString) like '%hemorrhage%') 
 
@@ -47,7 +73,7 @@ trsfsn as
 (
 select distinct patientunitstayid, treatmentstring, treatmentoffset,
 ROW_NUMBER() OVER (PARTITION BY patientunitstayid ORDER BY treatmentoffset  ASC) AS rntr
-from `physionet-data.eicu_crd.treatment`
+from treatment
 where (lower(treatmentstring) like '%transfusion%' or lower(treatmentstring) like '%packed red blood cell%')
 ),
 
@@ -70,16 +96,95 @@ where rn = 1),
 hgbrecord as (select patientunitstayid
 ,MIN(CASE WHEN (labresultoffset between -12*60+treatmentoffset AND treatmentoffset) AND labresult IS NOT NULL THEN labresult END) AS hgbmin
 from trsfsn
-left join `physionet-data.eicu_crd.lab` using (patientunitstayid)
+left join lab using (patientunitstayid)
 where lower(labname) like '%hgb%'
 and rntr=1
-group by patientunitstayid)
+group by patientunitstayid),
+
+septiclist as (select distinct patientunitstayid
+from patient
+left join diagnosis using (patientunitstayid)
+where lower(diagnosisstring) like '%sepsis%' or lower(diagnosisstring) like '%septic%'),
+
+ischemialist as (
+select distinct patientunitstayid
+from patient
+left join diagnosis using (patientunitstayid)
+where (lower(diagnosisstring) like '%ischemia%' or lower(diagnosisstring) like '%ischemic%')
+and (lower(diagnosisstring) not like '%chronic%')
+),
+
+activeischemialist as
+(select distinct patientunitstayid
+from patient
+left join diagnosis using (patientunitstayid)
+where lower(diagnosisstring) like '%myocardial ischemia%' or lower(diagnosisstring) like '%myocardial infarction%' or  lower(diagnosisstring) like '%acute coronary syndrome%'
+),
+
+cirrhosislist as 
+ (select distinct patientunitstayid
+from patient
+left join diagnosis using (patientunitstayid)
+where  lower(diagnosisstring) like '%cirrhosis%' 
+),
+
+surgerylist as 
+ (select distinct patientunitstayid
+from patient
+left join diagnosis using (patientunitstayid)
+where  diagnosisstring like '%surgery%' 
+),
+
+hypovolist as 
+ (select distinct patientunitstayid
+from patient
+left join diagnosis using (patientunitstayid)
+where  lower(diagnosisstring) like '%hypovolemia%' or 
+lower(diagnosisstring) like '%blood loss%'
+),
+
+traumalist as 
+ (select distinct patientunitstayid
+from patient
+left join diagnosis using (patientunitstayid)
+where  lower(diagnosisstring) like '%trauma%'
+)
 
 select distinct patientunitstayid, positivelist.uniquepid, unabridgedUnitLOS, unabridgedHospLOS, unitType,age, gender, ethnicity,apacheScore
 ,unitDischargeStatus, hgbmin
+,case when unabridgedActualVentdays is null then 0 else 1 end as ventmarker
+,case when (patientunitstayid in
+(select *
+from septiclist)
+)then 1 else 0 end as septicflag
+,case when (patientunitstayid in
+(select *
+from ischemialist)
+)then 1 else 0 end as anyacuteischemiccondition
+,case when (patientunitstayid in
+(select *
+from activeischemialist)
+)then 1 else 0 end as activecardiacischemia
+,case when (patientunitstayid in
+(select *
+from cirrhosislist)
+)then 1 else 0 end as cirrhosisflag
+,case when (patientunitstayid in
+(select *
+from hypovolist)
+)then 1 else 0 end hypovoflag
+,case when (patientunitstayid in
+(select *
+from traumalist)
+)then 1 else 0 end as traumaflag
+,case when (patientunitstayid in
+(select *
+from surgerylist)
+)then 1 else 0 end as gisflag
+,case when lower(unitDischargeStatus) like '%expired%' then 1 else 0 end as expiremarker
 from positivelist
-left join `physionet-data.eicu_crd.patient` using (patientUnitStayID) 
-left join `physionet-data.eicu_crd.apachepatientresult` using (patientUnitStayID) 
+left join patient using (patientUnitStayID) 
+left join apachepatientresult using (patientUnitStayID) 
 left join hgbrecord using (patientUnitStayID) 
 where unabridgedUnitLOS is not null
 and hgbmin is not null
