@@ -58,26 +58,31 @@ from trsfsn) then 1 else 0 end as trsfmark
 from sq
 left join trsfsn using (patientunitstayid)),
 
-positivegroup as (select *,
+negativegroup as (select *,
 ROW_NUMBER() OVER (PARTITION BY uniquepid ORDER BY patientunitstayid  ASC) AS rn
 from sq2
-where trsfmark = 1),
+where trsfmark = 0
+and uniquepid not in 
+(
+select uniquepid
+from sq2
+where trsfmark = 1
+)),
 
-positivelist as (select *
-from positivegroup
+negativelist as (select *
+from negativegroup
 where rn = 1),
 
 hgbrecord as (select patientunitstayid
-,MIN(CASE WHEN (labresultoffset between -12*60+treatmentoffset AND treatmentoffset) AND labresult IS NOT NULL THEN labresult END) AS hgbmin
-from trsfsn
+,MIN(CASE WHEN (labresultoffset between 0 AND unitDischargeOffset) AND labresult IS NOT NULL THEN labresult END) AS hgbmin
+from `physionet-data.eicu_crd.patient`
 left join `physionet-data.eicu_crd.lab` using (patientunitstayid)
 where lower(labname) like '%hgb%'
-and rntr=1
 group by patientunitstayid)
 
-select distinct patientunitstayid, positivelist.uniquepid, unabridgedUnitLOS, unabridgedHospLOS, unitType,age, gender, ethnicity,apacheScore
+select distinct patientunitstayid, negativelist.uniquepid, unabridgedUnitLOS, unabridgedHospLOS, unitType,age, gender, ethnicity,apacheScore
 ,unitDischargeStatus, hgbmin
-from positivelist
+from negativelist
 left join `physionet-data.eicu_crd.patient` using (patientUnitStayID) 
 left join `physionet-data.eicu_crd.apachepatientresult` using (patientUnitStayID) 
 left join hgbrecord using (patientUnitStayID) 
