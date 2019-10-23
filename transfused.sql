@@ -45,7 +45,8 @@ LOWER(diagnosisString) Like '%bleeding and red blood cell disorders%') )),
 
 trsfsn as 
 (
-select distinct patientunitstayid, treatmentstring
+select distinct patientunitstayid, treatmentstring, treatmentoffset,
+ROW_NUMBER() OVER (PARTITION BY patientunitstayid ORDER BY treatmentoffset  ASC) AS rntr
 from `physionet-data.eicu_crd.treatment`
 where (lower(treatmentstring) like '%transfusion%' or lower(treatmentstring) like '%packed red blood cell%')
 ),
@@ -64,11 +65,21 @@ where trsfmark = 1),
 
 positivelist as (select *
 from positivegroup
-where rn = 1)
+where rn = 1),
+
+hgbrecord as (select patientunitstayid
+,MIN(CASE WHEN (labresultoffset between -12*60+treatmentoffset AND treatmentoffset) AND labresult IS NOT NULL THEN labresult END) AS hgbmin
+from trsfsn
+left join `physionet-data.eicu_crd.lab` using (patientunitstayid)
+where lower(labname) like '%hgb%'
+and rntr=1
+group by patientunitstayid)
 
 select distinct patientunitstayid, positivelist.uniquepid, unabridgedUnitLOS, unabridgedHospLOS, unitType,age, gender, ethnicity,apacheScore
-,unitDischargeStatus
+,unitDischargeStatus, hgbmin
 from positivelist
 left join `physionet-data.eicu_crd.patient` using (patientUnitStayID) 
 left join `physionet-data.eicu_crd.apachepatientresult` using (patientUnitStayID) 
+left join hgbrecord using (patientUnitStayID) 
 where unabridgedUnitLOS is not null
+and hgbmin is not null
