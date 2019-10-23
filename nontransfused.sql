@@ -1,7 +1,32 @@
 WITH
+patient as (
+select *
+from `physionet-data.eicu_crd.patient`
+),
+
+treatment as (
+select *
+from `physionet-data.eicu_crd.treatment`
+),
+
+diagnosis as (
+select *
+from `physionet-data.eicu_crd.diagnosis`
+),
+
+lab as (
+select *
+from `physionet-data.eicu_crd.lab`
+),
+
+apachepatientresult as (
+select *
+from `physionet-data.eicu_crd.apachepatientresult`
+),
+
 Reliable_ICUs as(
 SELECT *
-FROM `physionet-data.eicu_crd.patient`
+FROM patient
 WHERE
 (wardID IN(259,261,267,273,285,286,307,317,324,337,338,345,347,362,369,376,377,384,391,394,
 408,413,417,425,428,429,430,431,434,445,464,451,487,489,491,495,498,504,506,512,513,594,601,
@@ -31,11 +56,11 @@ ORDER BY hospitalID),
 
 sq as (select distinct patientunitstayid, uniquepid
 from Reliable_ICUs
-left join `physionet-data.eicu_crd.diagnosis` using (patientunitstayid)
+left join diagnosis using (patientunitstayid)
 where patientUnitStayID
 not in (
 SELECT DISTINCT patientUnitStayID
-FROM `physionet-data.eicu_crd.diagnosis`
+FROM diagnosis
 WHERE 
 (LOWER(diagnosisString) like '%hemorrhage%') 
 
@@ -45,8 +70,9 @@ LOWER(diagnosisString) Like '%bleeding and red blood cell disorders%') )),
 
 trsfsn as 
 (
-select distinct patientunitstayid, treatmentstring
-from `physionet-data.eicu_crd.treatment`
+select distinct patientunitstayid, treatmentstring, treatmentoffset,
+ROW_NUMBER() OVER (PARTITION BY patientunitstayid ORDER BY treatmentoffset  ASC) AS rntr
+from treatment
 where (lower(treatmentstring) like '%transfusion%' or lower(treatmentstring) like '%packed red blood cell%')
 ),
 
@@ -70,11 +96,21 @@ where trsfmark = 1
 
 negativelist as (select *
 from negativegroup
-where rn = 1)
+where rn = 1),
+
+hgbrecord as (select patientunitstayid
+,MIN(CASE WHEN (labresultoffset between 0 AND unitDischargeOffset) AND labresult IS NOT NULL THEN labresult END) AS hgbmin
+from patient
+left join lab using (patientunitstayid)
+where lower(labname) like '%hgb%'
+group by patientunitstayid)
 
 select distinct patientunitstayid, negativelist.uniquepid, unabridgedUnitLOS, unabridgedHospLOS, unitType,age, gender, ethnicity,apacheScore
-,unitDischargeStatus
+,unitDischargeStatus, hgbmin
+,case when unabridgedActualVentdays is null then 0 else 1 end as ventmarker
 from negativelist
-left join `physionet-data.eicu_crd.patient` using (patientUnitStayID) 
-left join `physionet-data.eicu_crd.apachepatientresult` using (patientUnitStayID) 
+left join patient using (patientUnitStayID) 
+left join apachepatientresult using (patientUnitStayID) 
+left join hgbrecord using (patientUnitStayID) 
 where unabridgedUnitLOS is not null
+and hgbmin is not null
