@@ -238,7 +238,8 @@ tr as
 
 select distinct patientunitstayid, negativelist.uniquepid, unabridgedUnitLOS, unabridgedHospLOS, unitType
 , case when (age like '%> 89%' )then '89' else age end as age
-, gender, ethnicity,apacheScore
+, case when (lower(gender) not like '%male%') then null else gender end as gender 
+, ethnicity,apacheScore
 ,unitDischargeStatus, hgbmin
 ,case when unabridgedActualVentdays is null then 0 else 1 end as ventmarker
 ,case when (patientunitstayid in
@@ -288,3 +289,4 @@ left join apachepatientresult using (patientUnitStayID)
 left join hgbrecord using (patientUnitStayID) 
 where unabridgedUnitLOS is not null
 and hgbmin is not null
+and gender is not null
