@@ -1,4 +1,5 @@
 WITH --create tables to make it easier copy and paste to jupyter note
+---------if you are to use jupyter note book then discard from here-------------------------
 patient as (
 select *
 from `physionet-data.eicu_crd.patient`
@@ -23,6 +24,8 @@ apachepatientresult as (
 select *
 from `physionet-data.eicu_crd.apachepatientresult`
 ),
+
+------------------------------------------------to here--------------------------------------------------------
 
 --pickup reliable ICUs
 Reliable_ICUs as(
@@ -70,6 +73,7 @@ OR
 (LOWER(diagnosisString) Like '%bleed%' and not 
 LOWER(diagnosisString) Like '%bleeding and red blood cell disorders%') )),
 
+ -- pick up transfused patientunitstayid and give them row numbers based on treatmentoffset
 trsfsn as 
 (
 select distinct patientunitstayid, treatmentstring, treatmentoffset,
@@ -78,6 +82,7 @@ from treatment
 where (lower(treatmentstring) like '%transfusion%' or lower(treatmentstring) like '%packed red blood cell%')
 ),
 
+--join transfused list into patientlist 
 sq2 as (select patientunitstayid,uniquepid,
 case when patientunitstayid in
 (select patientunitstayid
@@ -90,6 +95,7 @@ ROW_NUMBER() OVER (PARTITION BY uniquepid ORDER BY patientunitstayid  ASC) AS rn
 from sq2
 where trsfmark = 1),
 
+--pick up first transfused stays                        
 positivelist as (select *
 from positivegroup
 where rn = 1),
