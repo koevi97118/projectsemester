@@ -61,9 +61,10 @@ where patientUnitStayID
 not in (
 SELECT DISTINCT patientUnitStayID
 FROM diagnosis
-WHERE 
+WHERE
 (LOWER(diagnosisString) like '%hemorrhage%') 
-
+OR
+(LOWER(diagnosisString) like '%blood loss%') 
 OR
 (LOWER(diagnosisString) Like '%bleed%' and not 
 LOWER(diagnosisString) Like '%bleeding and red blood cell disorders%') )),
