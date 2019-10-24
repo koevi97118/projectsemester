@@ -1,4 +1,4 @@
-WITH
+WITH --create tables to make it easier copy and paste to jupyter note
 patient as (
 select *
 from `physionet-data.eicu_crd.patient`
@@ -24,7 +24,7 @@ select *
 from `physionet-data.eicu_crd.apachepatientresult`
 ),
 
-
+--pickup reliable ICUs
 Reliable_ICUs as(
 SELECT *
 FROM patient
@@ -54,7 +54,7 @@ AND hospitaldischargeyear =2012)
 
 ORDER BY hospitalID),
 
-
+-- join diagnosis and exclude bleeding patients
 sq as (select distinct patientunitstayid, uniquepid
 from Reliable_ICUs
 left join diagnosis using (patientunitstayid)
@@ -64,7 +64,8 @@ SELECT DISTINCT patientUnitStayID
 FROM diagnosis
 WHERE 
 (LOWER(diagnosisString) like '%hemorrhage%') 
-
+OR
+(LOWER(diagnosisString) like '%blood loss%') 
 OR
 (LOWER(diagnosisString) Like '%bleed%' and not 
 LOWER(diagnosisString) Like '%bleeding and red blood cell disorders%') )),
