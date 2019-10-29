@@ -1,5 +1,4 @@
 WITH --create tables to make it easier copy and paste to jupyter note
----------if you are to use jupyter note book then discard from here-------------------------
 patient as (
 select *
 from `physionet-data.eicu_crd.patient`
@@ -25,7 +24,10 @@ select *
 from `physionet-data.eicu_crd.apachepatientresult`
 ),
 
-------------------------------------------------to here--------------------------------------------------------
+hospital as(
+select *
+from `physionet-data.eicu_crd.hospital`
+),
 
 --pickup reliable ICUs
 Reliable_ICUs as(
@@ -73,7 +75,6 @@ OR
 (LOWER(diagnosisString) Like '%bleed%' and not 
 LOWER(diagnosisString) Like '%bleeding and red blood cell disorders%') )),
 
- -- pick up transfused patientunitstayid and give them row numbers based on treatmentoffset
 trsfsn as 
 (
 select distinct patientunitstayid, treatmentstring, treatmentoffset,
@@ -82,7 +83,6 @@ from treatment
 where (lower(treatmentstring) like '%transfusion%' or lower(treatmentstring) like '%packed red blood cell%')
 ),
 
---join transfused list into patientlist 
 sq2 as (select patientunitstayid,uniquepid,
 case when patientunitstayid in
 (select patientunitstayid
@@ -95,13 +95,12 @@ ROW_NUMBER() OVER (PARTITION BY uniquepid ORDER BY patientunitstayid  ASC) AS rn
 from sq2
 where trsfmark = 1),
 
---pick up first transfused stays                        
 positivelist as (select *
 from positivegroup
 where rn = 1),
 
 hgbrecord as (select patientunitstayid
-,MIN(CASE WHEN (labresultoffset between -12*60+treatmentoffset AND treatmentoffset) AND labresult IS NOT NULL THEN labresult END) AS hgbmin
+,MIN(CASE WHEN (labresultoffset between -12*60+treatmentoffset AND 60+treatmentoffset) AND labresult IS NOT NULL THEN labresult END) AS hgbmin
 from trsfsn
 left join lab using (patientunitstayid)
 where lower(labname) like '%hgb%'
@@ -158,8 +157,7 @@ hypovolist as
  (select distinct patientunitstayid
 from patient
 left join diagnosis using (patientunitstayid)
-where  lower(diagnosisstring) like '%hypovolemia%' or 
-lower(diagnosisstring) like '%blood loss%'
+where  lower(diagnosisstring) like '%hypovolemia%'
 ),
 
 traumalist as 
@@ -245,6 +243,12 @@ tr as
 
 select distinct patientunitstayid, positivelist.uniquepid, unabridgedUnitLOS, unabridgedHospLOS, unitType
 , case when (age like '%> 89%' )then '89' else age end as age
+, case when hospitalid in
+(
+select hospitalid
+from hospital
+where teachingstatus is true
+)then 1 else 0 end as teachingflag
 , case when (lower(gender) not like '%male%') then null else gender end as gender 
 ,ethnicity,apacheScore
 ,hgbmin
