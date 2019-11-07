@@ -100,7 +100,7 @@ from positivegroup
 where rn = 1),
 
 hgbrecord as (select patientunitstayid
-,MIN(CASE WHEN (labresultoffset between -12*60+treatmentoffset AND 60+treatmentoffset) AND labresult IS NOT NULL THEN labresult END) AS hgbmin
+,MIN(CASE WHEN (labresultoffset between -12*60+treatmentoffset AND treatmentoffset) AND labresult IS NOT NULL THEN labresult END) AS hgbmin
 from trsfsn
 left join lab using (patientunitstayid)
 where lower(labname) like '%hgb%'
