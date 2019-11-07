@@ -24,6 +24,37 @@ select *
 from `physionet-data.eicu_crd.apachepatientresult`
 ),
 
+physicalexam as (select*
+from `physionet-data.eicu_crd.physicalexam`
+),
+
+
+vitalperiodic as (select*
+from `physionet-data.eicu_crd.vitalperiodic`
+),
+
+infusiondrug as (select*
+from `physionet-data.eicu_crd.infusiondrug`
+),
+
+intakeoutput as (select*
+from `physionet-data.eicu_crd.intakeoutput`
+),
+
+respiratorycharting as (select*
+from `physionet-data.eicu_crd.respiratorycharting`
+),
+
+nursecharting as (select*
+from `physionet-data.eicu_crd.nursecharting`
+),
+
+respiratorycare as (select*
+from `physionet-data.eicu_crd.respiratorycare`
+),
+
+
+
 Reliable_ICUs as(
 SELECT *
 FROM patient
@@ -257,7 +288,7 @@ WITH
           WHEN LOWER(physicalexampath) LIKE '%gcs/motor%' THEN CAST(physicalexamvalue AS INT64)
           ELSE NULL END) AS gcs_motor
     FROM
-      `physionet-data.eicu_crd.physicalexam` pe
+      physicalexam pe
     WHERE
       (LOWER(physicalexampath) LIKE '%gcs/eyes%'
         OR LOWER(physicalexampath) LIKE '%gcs/verbal%'
@@ -288,9 +319,9 @@ WITH
           WHEN LOWER(labname) LIKE 'platelet%' THEN labresult
           ELSE NULL END) AS plt
     FROM
-      `physionet-data.eicu_crd.patient` pt
+      patient pt
     LEFT OUTER JOIN
-      `physionet-data.eicu_crd.lab` lb
+      lab lb
     ON
       pt.patientunitstayid=lb.patientunitstayid
     WHERE
@@ -313,7 +344,7 @@ t1f_day2 AS (
           WHEN LOWER(physicalexampath) LIKE '%gcs/motor%' THEN CAST(physicalexamvalue AS INT64)
           ELSE NULL END) AS gcs_motor
     FROM
-      `physionet-data.eicu_crd.physicalexam` pe
+      physicalexam pe
     WHERE
       (LOWER(physicalexampath) LIKE '%gcs/eyes%'
         OR LOWER(physicalexampath) LIKE '%gcs/verbal%'
@@ -344,9 +375,9 @@ t1f_day2 AS (
           WHEN LOWER(labname) LIKE 'platelet%' THEN labresult
           ELSE NULL END) AS plt
     FROM
-      `physionet-data.eicu_crd.patient` pt
+      patient pt
     LEFT OUTER JOIN
-      `physionet-data.eicu_crd.lab` lb
+      lab lb
     ON
       pt.patientunitstayid=lb.patientunitstayid
     WHERE
@@ -369,7 +400,7 @@ t1f_day3 AS (
           WHEN LOWER(physicalexampath) LIKE '%gcs/motor%' THEN CAST(physicalexamvalue AS INT64)
           ELSE NULL END) AS gcs_motor
     FROM
-      `physionet-data.eicu_crd.physicalexam` pe
+      physicalexam pe
     WHERE
       (LOWER(physicalexampath) LIKE '%gcs/eyes%'
         OR LOWER(physicalexampath) LIKE '%gcs/verbal%'
@@ -400,9 +431,9 @@ t1f_day3 AS (
           WHEN LOWER(labname) LIKE 'platelet%' THEN labresult
           ELSE NULL END) AS plt
     FROM
-      `physionet-data.eicu_crd.patient` pt
+      patient pt
     LEFT OUTER JOIN
-      `physionet-data.eicu_crd.lab` lb
+      lab lb
     ON
       pt.patientunitstayid=lb.patientunitstayid
     WHERE
@@ -426,7 +457,7 @@ t1f_day4 AS (
           WHEN LOWER(physicalexampath) LIKE '%gcs/motor%' THEN CAST(physicalexamvalue AS INT64)
           ELSE NULL END) AS gcs_motor
     FROM
-      `physionet-data.eicu_crd.physicalexam` pe
+      physicalexam pe
     WHERE
       (LOWER(physicalexampath) LIKE '%gcs/eyes%'
         OR LOWER(physicalexampath) LIKE '%gcs/verbal%'
@@ -457,9 +488,9 @@ t1f_day4 AS (
           WHEN LOWER(labname) LIKE 'platelet%' THEN labresult
           ELSE NULL END) AS plt
     FROM
-      `physionet-data.eicu_crd.patient` pt
+      patient pt
     LEFT OUTER JOIN
-      `physionet-data.eicu_crd.lab` lb
+      lab lb
     ON
       pt.patientunitstayid=lb.patientunitstayid
     WHERE
@@ -568,7 +599,7 @@ t1f_day4 AS (
         ELSE 0 END) AS sofacns_day4
         
   FROM
-    `physionet-data.eicu_crd.patient` pt
+    patient pt
     
   LEFT OUTER JOIN
     t1_day1
@@ -640,7 +671,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        `physionet-data.eicu_crd.vitalaperiodic`
+        vitalaperiodic
       WHERE
         observationoffset BETWEEN -1440 AND 1440
       GROUP BY
@@ -653,7 +684,7 @@ t1f_day4 AS (
             WHEN systemicmean IS NOT NULL THEN systemicmean
             ELSE NULL END) AS map
       FROM
-        `physionet-data.eicu_crd.vitalperiodic`
+        vitalperiodic
       WHERE
         observationoffset BETWEEN -1440 AND 1440
       GROUP BY
@@ -666,7 +697,7 @@ t1f_day4 AS (
         ELSE NULL
       END AS map
     FROM
-      `physionet-data.eicu_crd.patient` pt
+      patient pt
     LEFT OUTER JOIN
       tt1
     ON
@@ -687,7 +718,7 @@ t1f_day4 AS (
           ELSE NULL
         END ) AS dopa
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%dopamine%'
       AND infusionoffset BETWEEN -1440 AND 1440
@@ -708,7 +739,7 @@ t1f_day4 AS (
           ELSE NULL
         END ) AS norepi
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%epinephrine%'
       AND infusionoffset BETWEEN -1440 AND 1440
@@ -724,7 +755,7 @@ t1f_day4 AS (
       DISTINCT patientunitstayid,
       1 AS dobu
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%dobutamin%'
       AND drugrate <>''
@@ -745,7 +776,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        `physionet-data.eicu_crd.vitalaperiodic`
+        vitalaperiodic
       WHERE
         observationoffset BETWEEN 1440 AND 1440*2
       GROUP BY
@@ -758,7 +789,7 @@ t1f_day4 AS (
             WHEN systemicmean IS NOT NULL THEN systemicmean
             ELSE NULL END) AS map
       FROM
-        `physionet-data.eicu_crd.vitalperiodic`
+        vitalperiodic
       WHERE
         observationoffset BETWEEN 1440 AND 1440*2
       GROUP BY
@@ -771,7 +802,7 @@ t1f_day4 AS (
         ELSE NULL
       END AS map
     FROM
-      `physionet-data.eicu_crd.patient` pt
+      patient pt
     LEFT OUTER JOIN
       tt1
     ON
@@ -792,7 +823,7 @@ t1f_day4 AS (
           ELSE NULL
         END ) AS dopa
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%dopamine%'
       AND infusionoffset BETWEEN 1440 AND 1440*2
@@ -813,7 +844,7 @@ t1f_day4 AS (
           ELSE NULL
         END ) AS norepi
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%epinephrine%'
       AND infusionoffset BETWEEN 1440 AND 1440*2
@@ -829,7 +860,7 @@ t1f_day4 AS (
       DISTINCT patientunitstayid,
       1 AS dobu
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%dobutamin%'
       AND drugrate <>''
@@ -850,7 +881,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        `physionet-data.eicu_crd.vitalaperiodic`
+        vitalaperiodic
       WHERE
         observationoffset BETWEEN 1440*2 AND 1440*3
       GROUP BY
@@ -863,7 +894,7 @@ t1f_day4 AS (
             WHEN systemicmean IS NOT NULL THEN systemicmean
             ELSE NULL END) AS map
       FROM
-        `physionet-data.eicu_crd.vitalperiodic`
+        vitalperiodic
       WHERE
         observationoffset BETWEEN 1440*2 AND 1440*3
       GROUP BY
@@ -876,7 +907,7 @@ t1f_day4 AS (
         ELSE NULL
       END AS map
     FROM
-      `physionet-data.eicu_crd.patient` pt
+      patient pt
     LEFT OUTER JOIN
       tt1
     ON
@@ -897,7 +928,7 @@ t1f_day4 AS (
           ELSE NULL
         END ) AS dopa
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%dopamine%'
       AND infusionoffset BETWEEN 1440*2 AND 1440*3
@@ -918,7 +949,7 @@ t1f_day4 AS (
           ELSE NULL
         END ) AS norepi
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%epinephrine%'
       AND infusionoffset BETWEEN 1440*2 AND 1440*3
@@ -934,7 +965,7 @@ t1f_day4 AS (
       DISTINCT patientunitstayid,
       1 AS dobu
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%dobutamin%'
       AND drugrate <>''
@@ -955,7 +986,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        `physionet-data.eicu_crd.vitalaperiodic`
+        vitalaperiodic
       WHERE
         observationoffset BETWEEN 1440*3 AND 1440*4
       GROUP BY
@@ -968,7 +999,7 @@ t1f_day4 AS (
             WHEN systemicmean IS NOT NULL THEN systemicmean
             ELSE NULL END) AS map
       FROM
-        `physionet-data.eicu_crd.vitalperiodic`
+        vitalperiodic
       WHERE
         observationoffset BETWEEN 1440*3 AND 1440*4
       GROUP BY
@@ -981,7 +1012,7 @@ t1f_day4 AS (
         ELSE NULL
       END AS map
     FROM
-      `physionet-data.eicu_crd.patient` pt
+      patient pt
     LEFT OUTER JOIN
       tt1
     ON
@@ -1002,7 +1033,7 @@ t1f_day4 AS (
           ELSE NULL
         END ) AS dopa
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%dopamine%'
       AND infusionoffset BETWEEN 1440*3 AND 1440*4
@@ -1023,7 +1054,7 @@ t1f_day4 AS (
           ELSE NULL
         END ) AS norepi
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%epinephrine%'
       AND infusionoffset BETWEEN 1440*3 AND 1440*4
@@ -1039,7 +1070,7 @@ t1f_day4 AS (
       DISTINCT patientunitstayid,
       1 AS dobu
     FROM
-      `physionet-data.eicu_crd.infusiondrug` id
+      infusiondrug id
     WHERE
       LOWER(drugname) LIKE '%dobutamin%'
       AND drugrate <>''
@@ -1096,7 +1127,7 @@ t1f_day4 AS (
         ELSE 0
      END) AS SOFA_cv_day4       
   FROM
-    `physionet-data.eicu_crd.patient` pt
+    patient pt
   ------------------VARS day1------------------------  
   LEFT OUTER JOIN
     t1_day1
@@ -1181,9 +1212,9 @@ t1f_day4 AS (
           WHEN LOWER(labname) LIKE 'creatin%' THEN labresult
           ELSE NULL END) AS creat
     FROM
-      `physionet-data.eicu_crd.patient` pt
+      patient pt
     LEFT OUTER JOIN
-      `physionet-data.eicu_crd.lab` lb
+      lab lb
     ON
       pt.patientunitstayid=lb.patientunitstayid
     WHERE
@@ -1209,7 +1240,7 @@ t1f_day4 AS (
               WHEN (intakeoutputoffset) BETWEEN -1440 AND 1440 THEN 1
               ELSE NULL END) AS dayz
         FROM
-          `physionet-data.eicu_crd.intakeoutput`
+          intakeoutput
           -- what does this account for?
         WHERE
           intakeoutputoffset BETWEEN -1440
@@ -1226,7 +1257,7 @@ t1f_day4 AS (
           WHEN uod1 IS NOT NULL THEN uod1
           ELSE NULL END) AS UO
     FROM
-      `physionet-data.eicu_crd.patient` pt
+      patient pt
     LEFT OUTER JOIN
       uotemp
     ON
@@ -1242,9 +1273,9 @@ t1f_day4 AS (
             WHEN LOWER(labname) LIKE 'creatin%' THEN labresult
             ELSE NULL END) AS creat
       FROM
-        `physionet-data.eicu_crd.patient` pt
+        patient pt
       LEFT OUTER JOIN
-        `physionet-data.eicu_crd.lab` lb
+        lab lb
       ON
         pt.patientunitstayid=lb.patientunitstayid
       WHERE
@@ -1270,7 +1301,7 @@ t1f_day4 AS (
                 WHEN (intakeoutputoffset) BETWEEN 1440 AND 1440*2 THEN 1
                 ELSE NULL END) AS dayz
           FROM
-            `physionet-data.eicu_crd.intakeoutput`
+            intakeoutput
           WHERE
             intakeoutputoffset BETWEEN 1440
             AND 1440*2
@@ -1286,7 +1317,7 @@ t1f_day4 AS (
             WHEN uod1 IS NOT NULL THEN uod1
             ELSE NULL END) AS UO
       FROM
-        `physionet-data.eicu_crd.patient` pt
+        patient pt
       LEFT OUTER JOIN
         uotemp
       ON
@@ -1303,9 +1334,9 @@ t1f_day4 AS (
             WHEN LOWER(labname) LIKE 'creatin%' THEN labresult
             ELSE NULL END) AS creat
       FROM
-        `physionet-data.eicu_crd.patient` pt
+        patient pt
       LEFT OUTER JOIN
-        `physionet-data.eicu_crd.lab` lb
+        lab lb
       ON
         pt.patientunitstayid=lb.patientunitstayid
       WHERE
@@ -1331,7 +1362,7 @@ t1f_day4 AS (
                 WHEN (intakeoutputoffset) BETWEEN 1440*2 AND 1440*3 THEN 1
                 ELSE NULL END) AS dayz
           FROM
-            `physionet-data.eicu_crd.intakeoutput`
+            intakeoutput
           WHERE
             intakeoutputoffset BETWEEN 1440*2
             AND 1440*3
@@ -1347,7 +1378,7 @@ t1f_day4 AS (
             WHEN uod1 IS NOT NULL THEN uod1
             ELSE NULL END) AS UO
       FROM
-        `physionet-data.eicu_crd.patient` pt
+        patient pt
       LEFT OUTER JOIN
         uotemp
       ON
@@ -1365,9 +1396,9 @@ t1f_day4 AS (
             WHEN LOWER(labname) LIKE 'creatin%' THEN labresult
             ELSE NULL END) AS creat
       FROM
-        `physionet-data.eicu_crd.patient` pt
+        patient pt
       LEFT OUTER JOIN
-        `physionet-data.eicu_crd.lab` lb
+        lab lb
       ON
         pt.patientunitstayid=lb.patientunitstayid
       WHERE
@@ -1393,7 +1424,7 @@ t1f_day4 AS (
                 WHEN (intakeoutputoffset) BETWEEN 1440*3 AND 1440*4 THEN 1
                 ELSE NULL END) AS dayz
           FROM
-            `physionet-data.eicu_crd.intakeoutput`
+            intakeoutput
           WHERE
             intakeoutputoffset BETWEEN 1440*3
             AND 1440*4
@@ -1409,7 +1440,7 @@ t1f_day4 AS (
             WHEN uod1 IS NOT NULL THEN uod1
             ELSE NULL END) AS UO
       FROM
-        `physionet-data.eicu_crd.patient` pt
+        patient pt
       LEFT OUTER JOIN
         uotemp
       ON
@@ -1454,7 +1485,7 @@ SELECT
       AND 2 THEN 1
         ELSE 0 END) AS sofarenal_day4
   FROM
-    `physionet-data.eicu_crd.patient` pt
+    patient pt
   LEFT OUTER JOIN
     t1_day1
   ON
@@ -1508,7 +1539,7 @@ SELECT
             MAX(CAST(respchartvalue AS INT64)) AS rcfio2
             -- , max(case when respchartvaluelabel = 'FiO2' then respchartvalue else null end) as fiO2
           FROM
-            `physionet-data.eicu_crd.respiratorycharting`
+            respiratorycharting
           WHERE
             respchartoffset BETWEEN -120
             AND 1440
@@ -1525,7 +1556,7 @@ SELECT
           DISTINCT patientunitstayid,
           MAX(CAST(nursingchartvalue AS INT64)) AS ncfio2
         FROM
-          `physionet-data.eicu_crd.nursecharting` nc
+          nursecharting nc
         WHERE
           LOWER(nursingchartcelltypevallabel) LIKE '%fio2%'
           AND REGEXP_CONTAINS(nursingchartvalue, '^[0-9]{0,2}$')
@@ -1540,7 +1571,7 @@ SELECT
               WHEN sao2 IS NOT NULL THEN sao2
               ELSE NULL END) AS sao2
         FROM
-          `physionet-data.eicu_crd.vitalperiodic`
+          vitalperiodic
         WHERE
           observationoffset BETWEEN -1440
           AND 1440
@@ -1553,7 +1584,7 @@ SELECT
               WHEN LOWER(labname) LIKE 'pao2%' THEN labresult
               ELSE NULL END) AS pao2
         FROM
-          `physionet-data.eicu_crd.lab`
+          lab
         WHERE
           labresultoffset BETWEEN -1440
           AND 1440
@@ -1568,7 +1599,7 @@ SELECT
                 WHEN airwaytype IN ('Oral ETT', 'Nasal ETT', 'Tracheostomy') THEN 1
                 ELSE NULL END) AS airway  -- either invasive airway or NULL
           FROM
-            `physionet-data.eicu_crd.respiratorycare`
+            respiratorycare
           WHERE
             respcarestatusoffset BETWEEN -1440
             AND 1440
@@ -1581,7 +1612,7 @@ SELECT
             DISTINCT patientunitstayid,
             1 AS ventilator
           FROM
-            `physionet-data.eicu_crd.respiratorycharting` rc
+            respiratorycharting rc
           WHERE
             respchartvalue LIKE '%ventilator%'
             OR respchartvalue LIKE '%vent%'
@@ -1605,7 +1636,7 @@ SELECT
                 WHEN treatmentstring IN ('pulmonary|ventilation and oxygenation|mechanical ventilation',  'pulmonary|ventilation and oxygenation|tracheal suctioning',  'pulmonary|ventilation and oxygenation|ventilator weaning',  'pulmonary|ventilation and oxygenation|mechanical ventilation|assist controlled',  'pulmonary|radiologic procedures / bronchoscopy|endotracheal tube',  'pulmonary|ventilation and oxygenation|oxygen therapy (> 60%)',  'pulmonary|ventilation and oxygenation|mechanical ventilation|tidal volume 6-10 ml/kg',  'pulmonary|ventilation and oxygenation|mechanical ventilation|volume controlled',  'surgery|pulmonary therapies|mechanical ventilation',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy',  'pulmonary|ventilation and oxygenation|mechanical ventilation|synchronized intermittent',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|performed during current admission for ventilatory support',  'pulmonary|ventilation and oxygenation|ventilator weaning|active',  'pulmonary|ventilation and oxygenation|mechanical ventilation|pressure controlled',  'pulmonary|ventilation and oxygenation|mechanical ventilation|pressure support',  'pulmonary|ventilation and oxygenation|ventilator weaning|slow',  'surgery|pulmonary therapies|ventilator weaning',  'surgery|pulmonary therapies|tracheal suctioning',  'pulmonary|radiologic procedures / bronchoscopy|reintubation',  'pulmonary|ventilation and oxygenation|lung recruitment maneuver',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|planned',  'surgery|pulmonary therapies|ventilator weaning|rapid',  'pulmonary|ventilation and oxygenation|prone position',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|conventional',  'pulmonary|ventilation and oxygenation|mechanical ventilation|permissive hypercapnea',  'surgery|pulmonary therapies|mechanical ventilation|synchronized intermittent',  'pulmonary|medications|neuromuscular blocking agent',  'surgery|pulmonary therapies|mechanical ventilation|assist controlled',  'pulmonary|ventilation and oxygenation|mechanical ventilation|volume assured',  'surgery|pulmonary therapies|mechanical ventilation|tidal volume 6-10 ml/kg',  'surgery|pulmonary therapies|mechanical ventilation|pressure support',  'pulmonary|ventilation and oxygenation|non-invasive ventilation',  'pulmonary|ventilation and oxygenation|non-invasive ventilation|face mask',  'pulmonary|ventilation and oxygenation|non-invasive ventilation|nasal mask',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation|face mask',  'surgery|pulmonary therapies|non-invasive ventilation',  'surgery|pulmonary therapies|non-invasive ventilation|face mask',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation|nasal mask',  'surgery|pulmonary therapies|non-invasive ventilation|nasal mask',  'surgery|pulmonary therapies|mechanical ventilation|non-invasive ventilation',  'surgery|pulmonary therapies|mechanical ventilation|non-invasive ventilation|face mask' ) THEN 1
                 ELSE NULL END) AS interface   -- either ETT/NiV or NULL
           FROM
-            `physionet-data.eicu_crd.treatment`
+            treatment
           WHERE
             treatmentoffset BETWEEN -1440
             AND 1440
@@ -1621,7 +1652,7 @@ SELECT
             ELSE NULL
           END AS mechvent
         FROM
-          `physionet-data.eicu_crd.patient` pt
+          patient pt
         LEFT OUTER JOIN
           t1_day1
         ON
@@ -1647,7 +1678,7 @@ SELECT
             ELSE NULL END) AS fio2,
         t5_day1.mechvent
       FROM
-        `physionet-data.eicu_crd.patient` pt
+        patient pt
       LEFT OUTER JOIN
         t1_day1
       ON
@@ -1704,7 +1735,7 @@ SELECT
             MAX(CAST(respchartvalue AS INT64)) AS rcfio2
             -- , max(case when respchartvaluelabel = 'FiO2' then respchartvalue else null end) as fiO2
           FROM
-            `physionet-data.eicu_crd.respiratorycharting`
+            respiratorycharting
           WHERE
             respchartoffset BETWEEN 1440
             AND 1440*2
@@ -1721,7 +1752,7 @@ SELECT
           DISTINCT patientunitstayid,
           MAX(CAST(nursingchartvalue AS INT64)) AS ncfio2
         FROM
-          `physionet-data.eicu_crd.nursecharting` nc
+          nursecharting nc
         WHERE
           LOWER(nursingchartcelltypevallabel) LIKE '%fio2%'
           AND REGEXP_CONTAINS(nursingchartvalue, '^[0-9]{0,2}$')
@@ -1736,7 +1767,7 @@ SELECT
               WHEN sao2 IS NOT NULL THEN sao2
               ELSE NULL END) AS sao2
         FROM
-          `physionet-data.eicu_crd.vitalperiodic`
+          vitalperiodic
         WHERE
           observationoffset BETWEEN 1440 AND 1440*2
         GROUP BY
@@ -1748,7 +1779,7 @@ SELECT
               WHEN LOWER(labname) LIKE 'pao2%' THEN labresult
               ELSE NULL END) AS pao2
         FROM
-          `physionet-data.eicu_crd.lab`
+          lab
         WHERE
           labresultoffset BETWEEN 1440 AND 1440*2
         GROUP BY
@@ -1762,7 +1793,7 @@ SELECT
                 WHEN airwaytype IN ('Oral ETT', 'Nasal ETT', 'Tracheostomy') THEN 1
                 ELSE NULL END) AS airway  -- either invasive airway or NULL
           FROM
-            `physionet-data.eicu_crd.respiratorycare`
+            respiratorycare
           WHERE
             respcarestatusoffset BETWEEN 1440 AND 1440*2
           GROUP BY
@@ -1774,7 +1805,7 @@ SELECT
             DISTINCT patientunitstayid,
             1 AS ventilator
           FROM
-            `physionet-data.eicu_crd.respiratorycharting` rc
+            respiratorycharting rc
           WHERE
             respchartvalue LIKE '%ventilator%'
             OR respchartvalue LIKE '%vent%'
@@ -1797,7 +1828,7 @@ SELECT
                 WHEN treatmentstring IN ('pulmonary|ventilation and oxygenation|mechanical ventilation',  'pulmonary|ventilation and oxygenation|tracheal suctioning',  'pulmonary|ventilation and oxygenation|ventilator weaning',  'pulmonary|ventilation and oxygenation|mechanical ventilation|assist controlled',  'pulmonary|radiologic procedures / bronchoscopy|endotracheal tube',  'pulmonary|ventilation and oxygenation|oxygen therapy (> 60%)',  'pulmonary|ventilation and oxygenation|mechanical ventilation|tidal volume 6-10 ml/kg',  'pulmonary|ventilation and oxygenation|mechanical ventilation|volume controlled',  'surgery|pulmonary therapies|mechanical ventilation',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy',  'pulmonary|ventilation and oxygenation|mechanical ventilation|synchronized intermittent',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|performed during current admission for ventilatory support',  'pulmonary|ventilation and oxygenation|ventilator weaning|active',  'pulmonary|ventilation and oxygenation|mechanical ventilation|pressure controlled',  'pulmonary|ventilation and oxygenation|mechanical ventilation|pressure support',  'pulmonary|ventilation and oxygenation|ventilator weaning|slow',  'surgery|pulmonary therapies|ventilator weaning',  'surgery|pulmonary therapies|tracheal suctioning',  'pulmonary|radiologic procedures / bronchoscopy|reintubation',  'pulmonary|ventilation and oxygenation|lung recruitment maneuver',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|planned',  'surgery|pulmonary therapies|ventilator weaning|rapid',  'pulmonary|ventilation and oxygenation|prone position',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|conventional',  'pulmonary|ventilation and oxygenation|mechanical ventilation|permissive hypercapnea',  'surgery|pulmonary therapies|mechanical ventilation|synchronized intermittent',  'pulmonary|medications|neuromuscular blocking agent',  'surgery|pulmonary therapies|mechanical ventilation|assist controlled',  'pulmonary|ventilation and oxygenation|mechanical ventilation|volume assured',  'surgery|pulmonary therapies|mechanical ventilation|tidal volume 6-10 ml/kg',  'surgery|pulmonary therapies|mechanical ventilation|pressure support',  'pulmonary|ventilation and oxygenation|non-invasive ventilation',  'pulmonary|ventilation and oxygenation|non-invasive ventilation|face mask',  'pulmonary|ventilation and oxygenation|non-invasive ventilation|nasal mask',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation|face mask',  'surgery|pulmonary therapies|non-invasive ventilation',  'surgery|pulmonary therapies|non-invasive ventilation|face mask',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation|nasal mask',  'surgery|pulmonary therapies|non-invasive ventilation|nasal mask',  'surgery|pulmonary therapies|mechanical ventilation|non-invasive ventilation',  'surgery|pulmonary therapies|mechanical ventilation|non-invasive ventilation|face mask' ) THEN 1
                 ELSE NULL END) AS interface   -- either ETT/NiV or NULL
           FROM
-            `physionet-data.eicu_crd.treatment`
+            treatment
           WHERE
             treatmentoffset BETWEEN 1440 AND 1440*2
           GROUP BY
@@ -1812,7 +1843,7 @@ SELECT
             ELSE NULL
           END AS mechvent
         FROM
-          `physionet-data.eicu_crd.patient` pt
+          patient pt
         LEFT OUTER JOIN
           t1_day2
         ON
@@ -1838,7 +1869,7 @@ SELECT
             ELSE NULL END) AS fio2,
         t5_day2.mechvent
       FROM
-        `physionet-data.eicu_crd.patient` pt
+        patient pt
       LEFT OUTER JOIN
         t1_day2
       ON
@@ -1895,7 +1926,7 @@ SELECT
             MAX(CAST(respchartvalue AS INT64)) AS rcfio2
             -- , max(case when respchartvaluelabel = 'FiO2' then respchartvalue else null end) as fiO2
           FROM
-            `physionet-data.eicu_crd.respiratorycharting`
+            respiratorycharting
           WHERE
             respchartoffset BETWEEN 1440*2
             AND 1440*3
@@ -1912,7 +1943,7 @@ SELECT
           DISTINCT patientunitstayid,
           MAX(CAST(nursingchartvalue AS INT64)) AS ncfio2
         FROM
-          `physionet-data.eicu_crd.nursecharting` nc
+          nursecharting nc
         WHERE
           LOWER(nursingchartcelltypevallabel) LIKE '%fio2%'
           AND REGEXP_CONTAINS(nursingchartvalue, '^[0-9]{0,2}$')
@@ -1927,7 +1958,7 @@ SELECT
               WHEN sao2 IS NOT NULL THEN sao2
               ELSE NULL END) AS sao2
         FROM
-          `physionet-data.eicu_crd.vitalperiodic`
+          vitalperiodic
         WHERE
           observationoffset BETWEEN 1440*2
           AND 1440*3
@@ -1940,7 +1971,7 @@ SELECT
               WHEN LOWER(labname) LIKE 'pao2%' THEN labresult
               ELSE NULL END) AS pao2
         FROM
-          `physionet-data.eicu_crd.lab`
+          lab
         WHERE
           labresultoffset BETWEEN 1440*2
           AND 1440*3
@@ -1955,7 +1986,7 @@ SELECT
                 WHEN airwaytype IN ('Oral ETT', 'Nasal ETT', 'Tracheostomy') THEN 1
                 ELSE NULL END) AS airway  -- either invasive airway or NULL
           FROM
-            `physionet-data.eicu_crd.respiratorycare`
+            respiratorycare
           WHERE
             respcarestatusoffset BETWEEN 1440*2
             AND 1440*3
@@ -1968,7 +1999,7 @@ SELECT
             DISTINCT patientunitstayid,
             1 AS ventilator
           FROM
-            `physionet-data.eicu_crd.respiratorycharting` rc
+            respiratorycharting rc
           WHERE
             respchartvalue LIKE '%ventilator%'
             OR respchartvalue LIKE '%vent%'
@@ -1992,7 +2023,7 @@ SELECT
                 WHEN treatmentstring IN ('pulmonary|ventilation and oxygenation|mechanical ventilation',  'pulmonary|ventilation and oxygenation|tracheal suctioning',  'pulmonary|ventilation and oxygenation|ventilator weaning',  'pulmonary|ventilation and oxygenation|mechanical ventilation|assist controlled',  'pulmonary|radiologic procedures / bronchoscopy|endotracheal tube',  'pulmonary|ventilation and oxygenation|oxygen therapy (> 60%)',  'pulmonary|ventilation and oxygenation|mechanical ventilation|tidal volume 6-10 ml/kg',  'pulmonary|ventilation and oxygenation|mechanical ventilation|volume controlled',  'surgery|pulmonary therapies|mechanical ventilation',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy',  'pulmonary|ventilation and oxygenation|mechanical ventilation|synchronized intermittent',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|performed during current admission for ventilatory support',  'pulmonary|ventilation and oxygenation|ventilator weaning|active',  'pulmonary|ventilation and oxygenation|mechanical ventilation|pressure controlled',  'pulmonary|ventilation and oxygenation|mechanical ventilation|pressure support',  'pulmonary|ventilation and oxygenation|ventilator weaning|slow',  'surgery|pulmonary therapies|ventilator weaning',  'surgery|pulmonary therapies|tracheal suctioning',  'pulmonary|radiologic procedures / bronchoscopy|reintubation',  'pulmonary|ventilation and oxygenation|lung recruitment maneuver',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|planned',  'surgery|pulmonary therapies|ventilator weaning|rapid',  'pulmonary|ventilation and oxygenation|prone position',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|conventional',  'pulmonary|ventilation and oxygenation|mechanical ventilation|permissive hypercapnea',  'surgery|pulmonary therapies|mechanical ventilation|synchronized intermittent',  'pulmonary|medications|neuromuscular blocking agent',  'surgery|pulmonary therapies|mechanical ventilation|assist controlled',  'pulmonary|ventilation and oxygenation|mechanical ventilation|volume assured',  'surgery|pulmonary therapies|mechanical ventilation|tidal volume 6-10 ml/kg',  'surgery|pulmonary therapies|mechanical ventilation|pressure support',  'pulmonary|ventilation and oxygenation|non-invasive ventilation',  'pulmonary|ventilation and oxygenation|non-invasive ventilation|face mask',  'pulmonary|ventilation and oxygenation|non-invasive ventilation|nasal mask',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation|face mask',  'surgery|pulmonary therapies|non-invasive ventilation',  'surgery|pulmonary therapies|non-invasive ventilation|face mask',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation|nasal mask',  'surgery|pulmonary therapies|non-invasive ventilation|nasal mask',  'surgery|pulmonary therapies|mechanical ventilation|non-invasive ventilation',  'surgery|pulmonary therapies|mechanical ventilation|non-invasive ventilation|face mask' ) THEN 1
                 ELSE NULL END) AS interface   -- either ETT/NiV or NULL
           FROM
-            `physionet-data.eicu_crd.treatment`
+            treatment
           WHERE
             treatmentoffset BETWEEN 1440*2
             AND 1440*3
@@ -2008,7 +2039,7 @@ SELECT
             ELSE NULL
           END AS mechvent
         FROM
-          `physionet-data.eicu_crd.patient` pt
+          patient pt
         LEFT OUTER JOIN
           t1_day3
         ON
@@ -2034,7 +2065,7 @@ SELECT
             ELSE NULL END) AS fio2,
         t5_day3.mechvent
       FROM
-        `physionet-data.eicu_crd.patient` pt
+        patient pt
       LEFT OUTER JOIN
         t1_day3
       ON
@@ -2091,7 +2122,7 @@ SELECT
             MAX(CAST(respchartvalue AS INT64)) AS rcfio2
             -- , max(case when respchartvaluelabel = 'FiO2' then respchartvalue else null end) as fiO2
           FROM
-            `physionet-data.eicu_crd.respiratorycharting`
+            respiratorycharting
           WHERE
             respchartoffset BETWEEN 1440*3
             AND 1440*4
@@ -2108,7 +2139,7 @@ SELECT
           DISTINCT patientunitstayid,
           MAX(CAST(nursingchartvalue AS INT64)) AS ncfio2
         FROM
-          `physionet-data.eicu_crd.nursecharting` nc
+          nursecharting nc
         WHERE
           LOWER(nursingchartcelltypevallabel) LIKE '%fio2%'
           AND REGEXP_CONTAINS(nursingchartvalue, '^[0-9]{0,2}$')
@@ -2124,7 +2155,7 @@ SELECT
               WHEN sao2 IS NOT NULL THEN sao2
               ELSE NULL END) AS sao2
         FROM
-          `physionet-data.eicu_crd.vitalperiodic`
+          vitalperiodic
         WHERE
           observationoffset BETWEEN 1440*3
             AND 1440*4
@@ -2137,7 +2168,7 @@ SELECT
               WHEN LOWER(labname) LIKE 'pao2%' THEN labresult
               ELSE NULL END) AS pao2
         FROM
-          `physionet-data.eicu_crd.lab`
+          lab
         WHERE
           labresultoffset BETWEEN 1440*3
             AND 1440*4
@@ -2152,7 +2183,7 @@ SELECT
                 WHEN airwaytype IN ('Oral ETT', 'Nasal ETT', 'Tracheostomy') THEN 1
                 ELSE NULL END) AS airway  -- either invasive airway or NULL
           FROM
-            `physionet-data.eicu_crd.respiratorycare`
+            respiratorycare
           WHERE
             respcarestatusoffset BETWEEN -1440*3
             AND 1440*4
@@ -2165,7 +2196,7 @@ SELECT
             DISTINCT patientunitstayid,
             1 AS ventilator
           FROM
-            `physionet-data.eicu_crd.respiratorycharting` rc
+            respiratorycharting rc
           WHERE
             respchartvalue LIKE '%ventilator%'
             OR respchartvalue LIKE '%vent%'
@@ -2189,7 +2220,7 @@ SELECT
                 WHEN treatmentstring IN ('pulmonary|ventilation and oxygenation|mechanical ventilation',  'pulmonary|ventilation and oxygenation|tracheal suctioning',  'pulmonary|ventilation and oxygenation|ventilator weaning',  'pulmonary|ventilation and oxygenation|mechanical ventilation|assist controlled',  'pulmonary|radiologic procedures / bronchoscopy|endotracheal tube',  'pulmonary|ventilation and oxygenation|oxygen therapy (> 60%)',  'pulmonary|ventilation and oxygenation|mechanical ventilation|tidal volume 6-10 ml/kg',  'pulmonary|ventilation and oxygenation|mechanical ventilation|volume controlled',  'surgery|pulmonary therapies|mechanical ventilation',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy',  'pulmonary|ventilation and oxygenation|mechanical ventilation|synchronized intermittent',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|performed during current admission for ventilatory support',  'pulmonary|ventilation and oxygenation|ventilator weaning|active',  'pulmonary|ventilation and oxygenation|mechanical ventilation|pressure controlled',  'pulmonary|ventilation and oxygenation|mechanical ventilation|pressure support',  'pulmonary|ventilation and oxygenation|ventilator weaning|slow',  'surgery|pulmonary therapies|ventilator weaning',  'surgery|pulmonary therapies|tracheal suctioning',  'pulmonary|radiologic procedures / bronchoscopy|reintubation',  'pulmonary|ventilation and oxygenation|lung recruitment maneuver',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|planned',  'surgery|pulmonary therapies|ventilator weaning|rapid',  'pulmonary|ventilation and oxygenation|prone position',  'pulmonary|surgery / incision and drainage of thorax|tracheostomy|conventional',  'pulmonary|ventilation and oxygenation|mechanical ventilation|permissive hypercapnea',  'surgery|pulmonary therapies|mechanical ventilation|synchronized intermittent',  'pulmonary|medications|neuromuscular blocking agent',  'surgery|pulmonary therapies|mechanical ventilation|assist controlled',  'pulmonary|ventilation and oxygenation|mechanical ventilation|volume assured',  'surgery|pulmonary therapies|mechanical ventilation|tidal volume 6-10 ml/kg',  'surgery|pulmonary therapies|mechanical ventilation|pressure support',  'pulmonary|ventilation and oxygenation|non-invasive ventilation',  'pulmonary|ventilation and oxygenation|non-invasive ventilation|face mask',  'pulmonary|ventilation and oxygenation|non-invasive ventilation|nasal mask',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation|face mask',  'surgery|pulmonary therapies|non-invasive ventilation',  'surgery|pulmonary therapies|non-invasive ventilation|face mask',  'pulmonary|ventilation and oxygenation|mechanical ventilation|non-invasive ventilation|nasal mask',  'surgery|pulmonary therapies|non-invasive ventilation|nasal mask',  'surgery|pulmonary therapies|mechanical ventilation|non-invasive ventilation',  'surgery|pulmonary therapies|mechanical ventilation|non-invasive ventilation|face mask' ) THEN 1
                 ELSE NULL END) AS interface   -- either ETT/NiV or NULL
           FROM
-            `physionet-data.eicu_crd.treatment`
+            treatment
           WHERE
             treatmentoffset BETWEEN 1440*3
             AND 1440*4
@@ -2205,7 +2236,7 @@ SELECT
             ELSE NULL
           END AS mechvent
         FROM
-          `physionet-data.eicu_crd.patient` pt
+          patient pt
         LEFT OUTER JOIN
           t1_day4
         ON
@@ -2231,7 +2262,7 @@ SELECT
             ELSE NULL END) AS fio2,
         t5_day4.mechvent
       FROM
-        `physionet-data.eicu_crd.patient` pt
+        patient pt
       LEFT OUTER JOIN
         t1_day4
       ON
@@ -2337,7 +2368,7 @@ SELECT
         ELSE 0
       END ) AS SOFA_respi_day4
   FROM
-    `physionet-data.eicu_crd.patient` pt
+    patient pt
     LEFT OUTER JOIN
     tempo2_day1 
     ON 
