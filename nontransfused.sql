@@ -33,6 +33,10 @@ vitalperiodic as (select*
 from `physionet-data.eicu_crd.vitalperiodic`
 ),
 
+vitalaperiodic as (select*
+from `physionet-data.eicu_crd.vitalaperiodic`
+),
+
 infusiondrug as (select*
 from `physionet-data.eicu_crd.infusiondrug`
 ),
@@ -268,7 +272,7 @@ tr as
   group by patientunitstayid, treatmentoffset
 ),
  
- sofaday as (
+ sofalist as (
  WITH sofa_3others_day1_to_day4 AS
 
 (
@@ -671,7 +675,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        vitalperiodic
+        vitalaperiodic
       WHERE
         observationoffset BETWEEN -1440 AND 1440
       GROUP BY
@@ -776,7 +780,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        vitalperiodic
+        vitalaperiodic
       WHERE
         observationoffset BETWEEN 1440 AND 1440*2
       GROUP BY
@@ -881,7 +885,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        vitalperiodic
+        vitalaperiodic
       WHERE
         observationoffset BETWEEN 1440*2 AND 1440*3
       GROUP BY
@@ -986,7 +990,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        vitalperiodic
+        vitalaperiodic
       WHERE
         observationoffset BETWEEN 1440*3 AND 1440*4
       GROUP BY
@@ -2390,7 +2394,7 @@ SELECT
 
     )
     
-    
+
  SELECT patient.patientunitstayid,
 
 max(sofa_cv_day1_to_day4.sofa_cv_day1 + sofa_respi_day1_to_day4.sofa_respi_day1 + sofa_renal_day1_to_day4.sofarenal_day1 + sofa_3others_day1_to_day4.sofacoag_day1 + sofa_3others_day1_to_day4.sofaliver_day1 + sofa_3others_day1_to_day4.sofacns_day1) AS sofatotal_day1,
@@ -2462,11 +2466,15 @@ select patientunitstayid
 from tr
 where vasopressor = 1) )then 1 else 0 end as vasopressor
 ,case when lower(unitDischargeStatus) like '%expired%' then 1 else 0 end as expiremarker
-,sofatotal_day1,sofatotal_day2,sofatotal_day3,sofatotal_day4
+,sofatotal_day1
+,sofatotal_day2
+,sofatotal_day3
+,sofatotal_day4
 from negativelist
 left join patient using (patientUnitStayID) 
 left join apachepatientresult using (patientUnitStayID) 
 left join hgbrecord using (patientUnitStayID) 
+left join sofalist using (patientunitstayid)
 where unabridgedUnitLOS is not null
 and hgbmin is not null
 and gender is not null
