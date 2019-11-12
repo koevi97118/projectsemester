@@ -671,7 +671,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        vitalaperiodic
+        vitalperiodic
       WHERE
         observationoffset BETWEEN -1440 AND 1440
       GROUP BY
@@ -776,7 +776,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        vitalaperiodic
+        vitalperiodic
       WHERE
         observationoffset BETWEEN 1440 AND 1440*2
       GROUP BY
@@ -881,7 +881,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        vitalaperiodic
+        vitalperiodic
       WHERE
         observationoffset BETWEEN 1440*2 AND 1440*3
       GROUP BY
@@ -986,7 +986,7 @@ t1f_day4 AS (
             WHEN noninvasivemean IS NOT NULL THEN noninvasivemean
             ELSE NULL END) AS map
       FROM
-        vitalaperiodic
+        vitalperiodic
       WHERE
         observationoffset BETWEEN 1440*3 AND 1440*4
       GROUP BY
