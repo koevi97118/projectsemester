@@ -2478,3 +2478,4 @@ left join sofalist using (patientunitstayid)
 where unabridgedUnitLOS is not null
 and hgbmin is not null
 and gender is not null
+order by patientunitstayid
